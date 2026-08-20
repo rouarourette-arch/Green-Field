@@ -38,6 +38,10 @@ const User = sequelize.define('User', {
       isIn: [['client', 'seller', 'admin']],
     },
   },
+  isApproved: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false, 
+  }
 }, {
   timestamps: true,
 });
