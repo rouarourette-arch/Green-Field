@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const cartController = require("../controllers/cartController");
-const authMiddleware = require("../middlewares/authMiddleware"); // Middleware pour vérifier le JWT/Cookie
+import { getCart, addToCart, updateQuantity, removeFromCart, checkout } from "../controllers/Cart.js";
 
-// Toutes les routes du panier nécessitent d'être connecté
+const authMiddleware = require("../middlewares/authMiddleware");
+
 router.use(authMiddleware);
 
-router.get("/", cartController.getCart);
-router.post("/add", cartController.addToCart);
-router.put("/update", cartController.updateQuantity);
-router.delete("/item/:productId", cartController.removeFromCart);
-router.post("/checkout", cartController.checkout);
+router.get("/", getCart);
+router.post("/add", addToCart);
+router.put("/update", updateQuantity);
+router.delete("/item/:productId", removeFromCart);
+router.post("/checkout", checkout);
 
 module.exports = router;

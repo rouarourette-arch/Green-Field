@@ -6,7 +6,7 @@ export default function Cart() {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. Charger le panier au montage
+  
   const fetchCart = async () => {
     try {
       const res = await api.get("/cart");
@@ -36,7 +36,7 @@ export default function Cart() {
   // 3. Supprimer un produit du panier
   const handleRemoveItem = async (productId) => {
     try {
-      await api.delete(/cart/item/${productId});
+      await api.delete(/cart/item/`${productId}`);
       fetchCart();
     } catch (err) {
       console.error(err);

@@ -47,7 +47,7 @@ export default function ProductDetails() {
           </p>
           <p className="product-detail-description">{product.description}</p>
 
-          {/* زر Add to Cart هنا في مكانو الصح */}
+          
           <button 
             className="btn-add-to-cart" 
             onClick={handleAddToCart}
