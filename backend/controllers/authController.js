@@ -29,6 +29,7 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      isApproved: role === 'seller' ? false : true,
     });
 
     return res.status(201).json({
@@ -84,6 +85,13 @@ export const login = async (req, res) => {
       });
     }
 
+    if (user.role === 'seller' && !user.isApproved) {
+      return res.status(403).json({
+        success: false,
+        message: 'Your seller account is pending admin approval. Please wait until approved.',
+      });
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -105,6 +113,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        isApproved: user.isApproved,
         phone: user.phone,
         address: user.address,
       },

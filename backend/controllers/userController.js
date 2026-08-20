@@ -31,6 +31,19 @@ export const getUserById = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+export const approveSeller = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    
+    user.isApproved = true;
+    await user.save();
+    
+    return res.status(200).json({ success: true, message: 'Seller approved successfully.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const updateUser = async (req, res) => {
   try {
