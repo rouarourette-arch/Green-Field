@@ -24,6 +24,19 @@ export default function Cart() {
     fetchCart();
   }, []);
 
+
+  const handleCheckout = async () => {
+    try {
+      const res = await api.post("/orders/checkout");
+      alert("Votre commande a été validée avec succès !");
+      // Rediriger vers la page de confirmation ou d'historique des commandes
+      navigate("/orders");
+    } catch (err) {
+      console.error("Erreur lors de la commande :", err);
+      alert("Impossible de valider la commande.");
+    }
+  };
+
   // Modifier la quantité
   const handleUpdateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -252,7 +265,7 @@ export default function Cart() {
             <button
               type="button"
               className="checkout-btn"
-              onClick={() => navigate("/checkout")}
+              onClick={() => handleCheckout() }
             >
               Confirmer la commande
             </button>

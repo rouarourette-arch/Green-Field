@@ -4,7 +4,19 @@ import User from "./User.js";
 import Cart from "./Cart.js";
 import CartItem from "./CartItem.js";
 import Review from "./Review.js";
+import Order from "./order.js";
+import OrderItem from "./OrderItem.js";
 
+
+// Relations Order
+User.hasMany(Order, { foreignKey: "userId" });
+Order.belongsTo(User, { foreignKey: "userId" });
+
+Order.hasMany(OrderItem, { foreignKey: "orderId", onDelete: "CASCADE" });
+OrderItem.belongsTo(Order, { foreignKey: "orderId" });
+
+Product.hasMany(OrderItem, { foreignKey: "productId" });
+OrderItem.belongsTo(Product, { foreignKey: "productId" });
 // =====================================================
 // CATEGORY ↔ PRODUCT
 // =====================================================
@@ -132,4 +144,6 @@ export {
   Cart,
   CartItem,
   Review,
+  Order,
+  OrderItem,
 };

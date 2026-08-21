@@ -8,6 +8,7 @@ import productRoutes from './routes/product.js';
 import categoryRoutes from './routes/category.js';
 import cartRoutes from './routes/cart.js';
 import reviewRoutes from './routes/review.js';
+import orderRoutes from './routes/Order.js';
 import './models/index.js';
 
 
@@ -29,6 +30,7 @@ app.use('/api/product', productRoutes);
 app.use('/api/product', reviewRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 const PORT = process.env.PORT;
 

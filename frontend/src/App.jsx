@@ -27,6 +27,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminUsers from './pages/AdminUsers.jsx';
 import AdminCategories from './pages/AdminCategories.jsx';
 import AdminProducts from './pages/AdminProducts.jsx';
+import Orders from './components/Orders.jsx';
 
 import api from './api/axios.js';
 
@@ -147,7 +148,7 @@ function AppContent() {
           <Route path="/admin/users" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminUsers /></RoleProtectedRoute>} />
           <Route path="/admin/categories" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminCategories /></RoleProtectedRoute>} />
           <Route path="/admin/products" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminProducts /></RoleProtectedRoute>} />
-
+          <Route path="/orders" element={<Orders />} />
 
           {/* ================= UNKNOWN ROUTE ================= */}
 
