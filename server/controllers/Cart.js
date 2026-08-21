@@ -1,6 +1,6 @@
 const { Cart, CartItem, Product } = require("../models");
 
-// Fonction interne pour récupérer ou créer le panier actif de l'utilisateur
+// Internal function to get or create the active cart for the user
 const getOrCreateActiveCart = async (userId) => {
   let cart = await Cart.findOne({ where: { userId, status: "active" } });
   if (!cart) {
@@ -29,7 +29,7 @@ exports.getCart = async (req, res) => {
   }
 };
 
-// 2. Ajouter un produit dans CartItem (ou augmenter sa quantité)
+// 2. Add a product to CartItem (or increase its quantity)
 exports.addToCart = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -39,7 +39,7 @@ exports.addToCart = async (req, res) => {
 
     const product = await Product.findByPk(productId);
     if (!product) {
-      return res.status(404).json({ message: "Produit introuvable" });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     let cartItem = await CartItem.findOne({
@@ -71,7 +71,7 @@ exports.updateCartItemQuantity = async (req, res) => {
 
     const cart = await Cart.findOne({ where: { userId, status: "active" } });
     if (!cart) {
-      return res.status(404).json({ message: "Panier introuvable" });
+      return res.status(404).json({ message: "Cart not found" });
     }
 
     const cartItem = await CartItem.findOne({
@@ -96,7 +96,7 @@ exports.updateCartItemQuantity = async (req, res) => {
   }
 };
 
-// 4. Supprimer un CartItem du panier
+// 4. Remove a CartItem from the cart
 exports.removeCartItem = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -104,18 +104,18 @@ exports.removeCartItem = async (req, res) => {
 
     const cart = await Cart.findOne({ where: { userId, status: "active" } });
     if (!cart) {
-      return res.status(404).json({ message: "Panier introuvable" });
+      return res.status(404).json({ message: "Cart not found" });
     }
 
     await CartItem.destroy({ where: { cartId: cart.id, productId } });
 
-    return res.status(200).json({ message: "Article supprimé du panier" });
+    return res.status(200).json({ message: "Item removed from cart" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
 
-// 5. Valider la commande (Checkout)
+// 5. Validate order (Checkout)
 exports.checkout = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -125,14 +125,14 @@ exports.checkout = async (req, res) => {
     });
 
     if (!cart || !cart.CartItems || cart.CartItems.length === 0) {
-      return res.status(400).json({ message: "Le panier est vide" });
+      return res.status(400).json({ message: "Cart is empty" });
     }
 
-    // Passer le statut à completed
+    // Update status to completed
     cart.status = "completed";
     await cart.save();
 
-    return res.status(200).json({ message: "Commande validée avec succès !" });
+    return res.status(200).json({ message: "Order validated successfully!" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

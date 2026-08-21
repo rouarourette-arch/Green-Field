@@ -46,7 +46,7 @@ export default function AddProduct({ fetchProducts }) {
       <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
       
       <select name="categoryId" value={formData.categoryId} onChange={handleChange} required>
-        <option value="">Sélectionner une catégorie</option>
+        <option value="">Select a category</option>
         {categories.map((cat) => (
           <option key={cat.id} value={cat.id}>{cat.name}</option>
         ))}

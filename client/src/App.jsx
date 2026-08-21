@@ -33,7 +33,7 @@ const [products, setProducts] = useState([]);
       <Header  />
       <main className="main-content">
         <Routes>
-          {/* Routes des produits */}
+          {/* Product routes */}
           <Route path="/" element={<Home fetchProducts={fetchProducts} />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/add" element={<AddProduct />} />

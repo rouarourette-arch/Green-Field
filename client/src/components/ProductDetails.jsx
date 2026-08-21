@@ -17,9 +17,9 @@ export default function ProductDetails() {
   const handleAddToCart = async () => {
   try {
     await api.post("/cart/add", { productId: product.id, quantity: 1 });
-    alert("Produit ajouté au panier !");
+    alert("Product added to cart!");
   } catch (err) {
-    console.error("Erreur ajout panier :", err);
+    console.error("Error adding to cart:", err);
   }
 };
 
@@ -28,7 +28,7 @@ export default function ProductDetails() {
   return (
     <div className="product-detail-container">
       <button className="btn-back" onClick={() => navigate("/")}>
-        &larr; Retour aux produits
+        &larr; Back to Products
       </button>
 
       <div className="product-detail-card">
@@ -43,7 +43,7 @@ export default function ProductDetails() {
           {product.category && <span className="product-category-tag">{product.category.name}</span>}
           <p className="product-detail-price">{product.price} €</p>
           <p className="product-detail-stock">
-            {product.stock > 0 ?" En stock :`${product.stock}` " : "Rupture de stock"}
+            {product.stock > 0 ?" In stock: `${product.stock}` " : "Out of stock"}
           </p>
           <p className="product-detail-description">{product.description}</p>
 
@@ -53,7 +53,7 @@ export default function ProductDetails() {
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
           >
-            {product.stock > 0 ? "Add to Cart" : "Épuisé"}
+            {product.stock > 0 ? "Add to Cart" : "Sold Out"}
           </button>
         </div>
       </div>

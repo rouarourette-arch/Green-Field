@@ -12,7 +12,7 @@ export default function Cart() {
       const res = await api.get("/cart");
       setCart(res.data);
     } catch (err) {
-      console.error("Erreur chargement panier :", err);
+      console.error("Error loading cart:", err);
     } finally {
       setLoading(false);
     }
@@ -22,18 +22,18 @@ export default function Cart() {
     fetchCart();
   }, []);
 
-  // 2. Modifier la quantité (+1 ou -1)
+  // 2. Update quantity (+1 or -1)
   const handleUpdateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
     try {
       await api.put("/cart/update", { productId, quantity: newQuantity });
-      fetchCart(); // Rafraîchir le panier
+      fetchCart(); // Refresh cart
     } catch (err) {
       console.error(err);
     }
   };
 
-  // 3. Supprimer un produit du panier
+  // 3. Remove a product from cart
   const handleRemoveItem = async (productId) => {
     try {
       await api.delete(/cart/item/`${productId}`);
@@ -43,20 +43,20 @@ export default function Cart() {
     }
   };
 
-  // 4. Valider la commande (Checkout)
+  // 4. Validate order (Checkout)
   const handleCheckout = async () => {
     try {
       await api.post("/cart/checkout");
-      alert("Commande confirmée avec succès !");
-      setCart(null); // Le panier est vidé
+      alert("Order confirmed successfully!");
+      setCart(null); // Cart is emptied
     } catch (err) {
-      console.error("Erreur lors de la commande :", err);
+      console.error("Error during checkout:", err);
     }
   };
 
-  if (loading) return <p>Chargement du panier...</p>;
+  if (loading) return <p>Loading cart...</p>;
   if (!cart || !cart.items || cart.items.length === 0) {
-    return <div className="cart-empty">Votre panier est vide.</div>;
+    return <div className="cart-empty">Your cart is empty.</div>;
   }
 
   // Calcul du montant total
@@ -67,7 +67,7 @@ export default function Cart() {
 
   return (
     <div className="cart-container">
-      <h2>Mon Panier</h2>
+      <h2>My cart</h2>
 
       <div className="cart-items">
         {cart.items.map((item) => (
@@ -79,7 +79,7 @@ export default function Cart() {
 
             <div className="cart-item-info">
               <h4>{item.Product.name}</h4>
-              <p>Prix unitaire : {item.Product.price} €</p>
+              <p>Unit price: {item.Product.price} €</p>
             </div>
 
             <div className="cart-item-quantity">
@@ -108,16 +108,16 @@ export default function Cart() {
               className="btn-delete"
               onClick={() => handleRemoveItem(item.productId)}
             >
-              Supprimer
+              Remove
             </button>
           </div>
         ))}
       </div>
 
       <div className="cart-summary">
-        <h3>Total : {totalPrice.toFixed(2)} €</h3>
+        <h3>Total: {totalPrice.toFixed(2)} €</h3>
         <button className="btn-checkout" onClick={handleCheckout}>
-          Confirmer la commande
+          Confirm Order
         </button>
       </div>
     </div>

@@ -13,7 +13,7 @@
   letter-spacing: 1px;
 }
 
-/* Grille responsive pour les cartes produits */
+/* Responsive grid for product cards */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
