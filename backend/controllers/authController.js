@@ -4,7 +4,14 @@ import User from '../models/User.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role = 'client' } = req.body;
+
+    if (!['client', 'seller'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Public registration is limited to client or seller accounts.',
+      });
+    }
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
