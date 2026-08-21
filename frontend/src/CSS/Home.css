@@ -1,0 +1,100 @@
+/* ========================================
+   MAIN PRODUCTS CONTAINER
+======================================== */
+
+.main-container {
+  width: 100%;
+  max-width: 1250px;
+
+  margin: 0 auto;
+  padding: 35px 25px;
+
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   PAGE TITLE
+======================================== */
+
+.main-container h3 {
+  margin: 0 0 30px;
+
+  font-size: 26px;
+  font-weight: 700;
+
+  color: #222;
+
+  text-align: left;
+
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+
+/* ========================================
+   PRODUCTS GRID
+======================================== */
+
+.products-grid {
+  display: grid;
+
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(240px, 1fr)
+  );
+
+  gap: 24px;
+
+  width: 100%;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 900px) {
+
+  .main-container {
+    padding: 30px 20px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(220px, 1fr)
+    );
+
+    gap: 20px;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .main-container {
+    padding: 25px 15px;
+  }
+
+  .main-container h3 {
+    font-size: 22px;
+    margin-bottom: 22px;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+}
+
+
+@media (max-width: 420px) {
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
