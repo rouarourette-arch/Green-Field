@@ -12,13 +12,30 @@ const Order = sequelize.define("Order", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  cartId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   totalAmount: {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
   status: {
-    type: DataTypes.ENUM("pending", "paid", "shipped", "cancelled"),
+    type: DataTypes.ENUM("pending", "paid", "processing", "shipped", "delivered", "cancelled"),
     defaultValue: "pending",
+  },
+  paymentStatus: {
+    type: DataTypes.ENUM("pending", "paid", "failed", "cancelled"),
+    defaultValue: "pending",
+  },
+  stripeSessionId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
+  stripePaymentIntentId: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
 });
 

@@ -1,131 +1,100 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import api from "../api/axios.js";
+import "../CSS/Navbar.css";
 
-export const Navbar = () => {
+export function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    if (user?.role !== "client") return;
+    api.get("/cart").then((response) => setCartCount((response.data.CartItems || response.data.items || []).reduce((total, item) => total + item.quantity, 0))).catch(() => setCartCount(0));
+  }, [user]);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      navigate('/login');
-    }
+    await logout();
+    navigate("/login");
   };
 
   return (
-    <nav style={styles.nav}>
+    <header className="navbar">
+      <div className="navbar-container">
 
-      {/* ================= BRAND ================= */}
-
-      <Link to="/" style={styles.brand}>
-        ByteStore
-      </Link>
-
-
-      {/* ================= LINKS ================= */}
-
-      <div style={styles.links}>
-
-        {/* Products / Home */}
-        <Link to="/" style={styles.link}>
-          Products
+        <Link to="/" className="navbar-logo">
+          <span className="logo-icon">B</span>
+          <span>ByteStore</span>
         </Link>
 
+        <nav className="navbar-links">
 
-        {!user ? (
-          <>
-            {/* ================= GUEST ================= */}
+          <NavLink to="/" className="nav-link">
+            Products
+          </NavLink>
 
-            <Link to="/login" style={styles.link}>
-              Login
-            </Link>
+          {user?.role === "client" && (
+            <>
+            <NavLink to="/cart" className="nav-link">
+              Cart {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+            </NavLink>
+            <NavLink to="/orders" className="nav-link">My Orders</NavLink>
+            </>
+          )}
 
-            <Link to="/register" style={styles.link}>
-              Register
-            </Link>
-          </>
-        ) : (
-          <>
-            {/* ================= AUTHENTICATED ================= */}
+          {user?.role === "seller" && (
+            <>
+              <Link to="/seller" className="nav-link">Dashboard</Link>
+              <Link to="/seller/products" className="nav-link">
+                My Products
+              </Link>
+              <NavLink to="/seller/orders" className="nav-link">Orders</NavLink>
 
-            {user.role === 'client' && <Link to="/cart" style={styles.link}>Cart</Link>}
-            {user.role === 'seller' && <>
-              <Link to="/seller/products" style={styles.link}>My Products</Link>
-              <Link to="/seller/products/add" style={styles.link}>Add Product</Link>
-            </>}
-            {user.role === 'admin' && <>
-              <Link to="/admin" style={styles.link}>Dashboard</Link>
-              <Link to="/admin/users" style={styles.link}>Users</Link>
-              <Link to="/admin/categories" style={styles.link}>Categories</Link>
-              <Link to="/admin/products" style={styles.link}>Products</Link>
-            </>}
-            <Link to="/profile" style={styles.link}>Profile</Link>
+              <Link to="/seller/products/add" className="nav-link">
+                Add Product
+              </Link>
+            </>
+          )}
 
+          {user?.role === "admin" && (
+            <>
+              <NavLink to="/admin" className="nav-link">
+                Dashboard
+              </NavLink>
 
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              style={styles.logoutBtn}
-            >
+              <NavLink to="/admin/users" className="nav-link">
+                Users
+              </NavLink>
+
+              <NavLink to="/admin/categories" className="nav-link">
+                Categories
+              </NavLink>
+
+              <NavLink to="/admin/products" className="nav-link">
+                Products
+              </NavLink>
+              <Link to="/admin/orders" className="nav-link">Orders</Link>
+            </>
+          )}
+
+          {user && (
+            <NavLink to="/profile" className="nav-link">
+              Profile
+            </NavLink>
+          )}
+
+          {user ? (
+            <button className="logout-btn" onClick={handleLogout}>
               Logout
             </button>
-          </>
-        )}
+          ) : (
+            <Link to="/login" className="login-btn">
+              Login
+            </Link>
+          )}
 
+        </nav>
       </div>
-    </nav>
+    </header>
   );
-};
-
-
-const styles = {
-  nav: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '1rem 2rem',
-    background: '#1e293b',
-    color: '#fff',
-    flexWrap: 'wrap',
-    gap: '1rem',
-  },
-
-  brand: {
-    color: '#38bdf8',
-    textDecoration: 'none',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-  },
-
-  links: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1.2rem',
-    flexWrap: 'wrap',
-  },
-
-  link: {
-    color: '#fff',
-    textDecoration: 'none',
-    fontSize: '0.95rem',
-  },
-
-  user: {
-    color: '#cbd5e1',
-    fontWeight: '500',
-  },
-
-  logoutBtn: {
-    background: '#ef4444',
-    color: '#fff',
-    border: 'none',
-    padding: '0.45rem 0.9rem',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-  },
-};
+}

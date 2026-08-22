@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios";
-import "../CSS/ProductCard.css";
+import "../CSS/ProductDetails.css";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -50,7 +50,7 @@ export default function ProductDetails() {
     setSuccessMsg("");
 
     if (!user) {
-      setErrorMsg("Veuillez vous connecter pour laisser un avis.");
+      setErrorMsg("Please sign in to leave a review.");
       return;
     }
 
@@ -63,7 +63,7 @@ export default function ProductDetails() {
         comment: reviewForm.comment,
       });
 
-      setSuccessMsg(res.data.message || "Avis ajouté avec succès !");
+      setSuccessMsg(res.data.message || "Review added successfully.");
       setReviewForm({ rating: 5, comment: "" });
 
       // Refresh reviews & average rating
@@ -73,7 +73,7 @@ export default function ProductDetails() {
 
     } catch (err) {
       setErrorMsg(
-        err.response?.data?.message || "Échec de l'envoi de l'avis."
+        err.response?.data?.message || "Unable to submit the review."
       );
     } finally {
       setSubmitting(false);
@@ -87,24 +87,24 @@ export default function ProductDetails() {
         quantity: 1
       });
 
-      alert("Produit ajouté au panier ! 🛒");
+      alert("Product added to cart.");
 
     } catch (err) {
-      console.error("Erreur ajout panier :", err);
+      console.error("Unable to add product to cart:", err);
 
       alert(
         err.response?.data?.message ||
-        "Erreur lors de l'ajout au panier."
+        "Unable to add product to cart."
       );
     }
   };
 
   if (loading) {
-    return <p className="loading-state">Chargement du produit...</p>;
+    return <p className="loading-state">Loading product...</p>;
   }
 
   if (!product) {
-    return <p className="error-state">Produit introuvable.</p>;
+    return <p className="error-state">Product not found.</p>;
   }
 
   let parsedImages = [];
@@ -127,10 +127,10 @@ export default function ProductDetails() {
     <div className="product-detail-container">
 
       <button
-        className="btn-back"
+        className="secondary-btn btn-back"
         onClick={() => navigate("/")}
       >
-        &larr; Retour aux produits
+        &larr; Back to products
       </button>
 
       <div className="product-detail-card">
@@ -147,19 +147,19 @@ export default function ProductDetails() {
 
           <h2>{product.name}</h2>
 
-          {product.Category && (
+          {(product.category || product.Category) && (
             <span className="product-category-tag">
-              {product.Category.name}
+              {(product.category || product.Category).name}
             </span>
           )}
 
           <div className="product-rating-overview">
             <span className="stars">
-              ⭐ {avgRating} / 5
+              ★ {Number(avgRating).toFixed(1)} / 5
             </span>
 
             <span className="review-count">
-              ({reviews.length} avis)
+              ({reviews.length} reviews)
             </span>
           </div>
 
@@ -175,8 +175,8 @@ export default function ProductDetails() {
             }`}
           >
             {product.stock > 0
-              ? `En stock (${product.stock} disponibles)`
-              : "Rupture de stock"}
+              ? `In stock (${product.stock} available)`
+              : "Out of stock"}
           </p>
 
           <p className="product-detail-description">
@@ -189,8 +189,8 @@ export default function ProductDetails() {
             disabled={product.stock <= 0}
           >
             {product.stock > 0
-              ? "Ajouter au Panier 🛒"
-              : "Épuisé"}
+              ? "Add to cart"
+              : "Out of stock"}
           </button>
 
         </div>
@@ -199,14 +199,14 @@ export default function ProductDetails() {
       <section className="product-reviews-section">
 
         <h3>
-          Avis Clients ({reviews.length})
+          Customer reviews ({reviews.length})
         </h3>
 
         <div className="reviews-list">
 
           {reviews.length === 0 ? (
             <p className="no-reviews">
-              Aucun avis pour ce produit. Soyez le premier !
+              No reviews yet. Be the first to review this product.
             </p>
           ) : (
             reviews.map((review) => (
@@ -222,7 +222,7 @@ export default function ProductDetails() {
                   </strong>
 
                   <span className="review-stars">
-                    {"⭐".repeat(review.rating)}
+                    {"★".repeat(review.rating)}
                   </span>
 
                 </div>
@@ -251,7 +251,7 @@ export default function ProductDetails() {
           >
 
             <h4>
-              Donner votre avis
+              Write a review
             </h4>
 
             {errorMsg && (
@@ -268,7 +268,7 @@ export default function ProductDetails() {
 
             <label className="form-label">
 
-              Note :
+              Rating:
 
               <select
                 value={reviewForm.rating}
@@ -312,7 +312,7 @@ export default function ProductDetails() {
                   comment: e.target.value
                 })
               }
-              placeholder="Écrivez votre commentaire ici..."
+              placeholder="Write your review here..."
               required
               rows={3}
             />
@@ -323,8 +323,8 @@ export default function ProductDetails() {
               disabled={submitting}
             >
               {submitting
-                ? "Envoi..."
-                : "Envoyer l'avis"}
+                ? "Submitting..."
+                : "Submit review"}
             </button>
 
           </form>
@@ -335,16 +335,12 @@ export default function ProductDetails() {
 
             <span
               onClick={() => navigate("/login")}
-              style={{
-                color: "#007bff",
-                cursor: "pointer",
-                textDecoration: "underline"
-              }}
+              className="review-login-link"
             >
-              Connectez-vous
+              Sign in
             </span>
 
-            {" "}pour laisser un avis.
+            {" "}to leave a review.
 
           </p>
 

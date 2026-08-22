@@ -22,8 +22,11 @@ export default function Home({ products }) {
   });
 
   return (
-    <div className="main-container">
-      <h3>ALL the products</h3>
+    <div className="page-container home-page">
+      <header className="page-header home-header">
+        <div><p className="eyebrow">ByteStore marketplace</p><h1 className="page-title">Find your next favorite thing</h1><p className="page-subtitle">Curated products from trusted sellers.</p></div>
+        <span className="results-count">{filteredProducts.length} products</span>
+      </header>
       <div className="product-filters">
         <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products" />
         <select value={category} onChange={(event) => setCategory(event.target.value)}>

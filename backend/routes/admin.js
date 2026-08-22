@@ -1,0 +1,20 @@
+import express from 'express';
+import { authMiddleware } from '../middleware/authMiddleware.js';
+import { roleMiddleware } from '../middleware/roleMiddleware.js';
+import { getAllUsers, getUserById } from '../controllers/userController.js';
+import { getAdminDashboard, getAdminProducts, getAdminCategories, getAdminUserDetails, getAdminSellerDetails } from '../controllers/admin.js';
+import { getAdminOrders, getOrderById, updateOrderStatus } from '../controllers/Order.js';
+
+const router = express.Router();
+router.use(authMiddleware, roleMiddleware('admin'));
+router.get('/dashboard', getAdminDashboard);
+router.get('/users', getAllUsers);
+router.get('/users/:id', getAdminUserDetails);
+router.get('/sellers/:id', getAdminSellerDetails);
+router.get('/products', getAdminProducts);
+router.get('/orders', getAdminOrders);
+router.get('/orders/:id', getOrderById);
+router.put('/orders/:id/status', updateOrderStatus);
+router.get('/categories', getAdminCategories);
+router.get('/users/:id/profile', getUserById);
+export default router;

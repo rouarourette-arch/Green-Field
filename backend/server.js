@@ -9,10 +9,17 @@ import categoryRoutes from './routes/category.js';
 import cartRoutes from './routes/cart.js';
 import reviewRoutes from './routes/review.js';
 import orderRoutes from './routes/Order.js';
+import paymentRoutes from './routes/payment.js';
+import adminRoutes from './routes/admin.js';
+import sellerRoutes from './routes/seller.js';
 import './models/index.js';
+import { handleStripeWebhook } from './controllers/Order.js';
 
 
 const app = express();
+
+app.post('/api/orders/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
 
 
 app.use(cors({
@@ -30,6 +37,9 @@ app.use('/api/product', productRoutes);
 app.use('/api/reviews', reviewRoutes);app.use('/api/category', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/seller', sellerRoutes);
 
 
 const PORT = process.env.PORT;
