@@ -26,9 +26,9 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/product', productRoutes);
-app.use('/api/product', reviewRoutes);
-app.use('/api/category', categoryRoutes);
+app.use('/api/reviews', reviewRoutes);app.use('/api/category', categoryRoutes);
 app.use('/api/cart', cartRoutes);
+
 
 const PORT = process.env.PORT;
 
