@@ -1,4 +1,4 @@
-import { Product } from "../models/index.js";
+import { Product, OrderItem, Review } from "../models/index.js";
 
 // =====================================================
 // GET ALL PRODUCTS
@@ -7,8 +7,12 @@ import { Product } from "../models/index.js";
 export const getAllproducts = async (req, res) => {
   try {
     const products = await Product.findAll({
-      include: [{ association: "category" }],
+      include: [{ association: "category" }, { model: Review }],
     });
+    const productIds = products.map((product) => product.id);
+    const sales = await OrderItem.findAll({ where: { productId: productIds }, attributes: ["productId", [Product.sequelize.fn("SUM", Product.sequelize.col("quantity")), "salesCount"]], group: ["productId"] });
+    const salesByProduct = Object.fromEntries(sales.map((sale) => [sale.productId, Number(sale.get("salesCount"))]));
+    products.forEach((product) => product.setDataValue("salesCount", salesByProduct[product.id] || 0));
 
     return res.status(200).json(products);
   } catch (error) {
@@ -212,7 +216,13 @@ export const getSellerProducts = async (req, res) => {
       where: {
         sellerId: req.user.id,
       },
-      include: [{ association: "category" }],
+      include: [{ association: "category" }, { model: Review }],
+    });
+    const sales = await OrderItem.findAll({ where: { productId: products.map((product) => product.id) }, attributes: ["productId", [Product.sequelize.fn("SUM", Product.sequelize.col("quantity")), "salesCount"]], group: ["productId"] });
+    const salesByProduct = Object.fromEntries(sales.map((sale) => [sale.productId, Number(sale.get("salesCount"))]));
+    products.forEach((product) => {
+      product.setDataValue("salesCount", salesByProduct[product.id] || 0);
+      product.setDataValue("averageRating", product.Reviews?.length ? product.Reviews.reduce((sum, review) => sum + review.rating, 0) / product.Reviews.length : 0);
     });
 
     return res.status(200).json(products);

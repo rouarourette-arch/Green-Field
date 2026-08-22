@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import '../CSS/Login.css';
 
 export const Login = () => {
   const { login, user } = useAuth();
@@ -27,17 +28,17 @@ export const Login = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Login to ByteStore</h2>
-      {error && <p style={styles.error}>{error}</p>}
-      <form onSubmit={handleSubmit} style={styles.form}>
+    <div className="auth-page"><div className="auth-card">
+      <div className="auth-brand"><span className="logo-icon">B</span><span>ByteStore</span></div><h2>Welcome back</h2><p className="page-subtitle">Sign in to continue shopping.</p>
+      {error && <p className="feedback feedback-error">{error}</p>}
+      <form onSubmit={handleSubmit} className="auth-form">
         <input
           type="email"
           placeholder="Email"
           required
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
         <input
           type="password"
@@ -45,19 +46,12 @@ export const Login = () => {
           required
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
-        <button type="submit" style={styles.button}>Login</button>
+        <button type="submit" className="primary-btn">Login</button>
       </form>
       <p>Don't have an account? <Link to="/register">Register here</Link></p>
-    </div>
+    </div></div>
   );
 };
 
-const styles = {
-  container: { maxWidth: '400px', margin: '2rem auto', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px' },
-  form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  input: { padding: '0.5rem', fontSize: '1rem' },
-  button: { padding: '0.5rem', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
-  error: { color: 'red' },
-};

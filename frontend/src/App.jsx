@@ -22,14 +22,21 @@ import ProductDetails from './components/ProductDetails.jsx';
 import Cart from './components/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import SellerProducts from './pages/SellerProducts.jsx';
+import SellerDashboard from './pages/SellerDashboard.jsx';
 import EditProduct from './pages/EditProduct.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminUsers from './pages/AdminUsers.jsx';
 import AdminCategories from './pages/AdminCategories.jsx';
 import AdminProducts from './pages/AdminProducts.jsx';
+import AdminOrders from './pages/AdminOrders.jsx';
+import OrderDetails from './pages/OrderDetails.jsx';
+import SellerOrders from './pages/SellerOrders.jsx';
+import AdminUserDetails from './pages/AdminUserDetails.jsx';
+import AdminSellerDetails from './pages/AdminSellerDetails.jsx';
 import Orders from './components/Orders.jsx';
 
 import api from './api/axios.js';
+import './App.css';
 
 
 function AppContent() {
@@ -72,7 +79,7 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div style={styles.loading}>
+      <div className="loading-state">
         Loading...
       </div>
     );
@@ -83,7 +90,7 @@ function AppContent() {
     <>
       <Navbar />
 
-      <main style={styles.main}>
+      <main>
         <Routes>
 
           {/* ================= PUBLIC ================= */}
@@ -139,16 +146,22 @@ function AppContent() {
 
 
           <Route path="/checkout" element={<RoleProtectedRoute allowedRoles={['client']}><Checkout /></RoleProtectedRoute>} />
+          <Route path="/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
 
+          <Route path="/seller" element={<RoleProtectedRoute allowedRoles={['seller']}><SellerDashboard /></RoleProtectedRoute>} />
+          <Route path="/seller/orders" element={<RoleProtectedRoute allowedRoles={['seller']}><SellerOrders /></RoleProtectedRoute>} />
           <Route path="/seller/products" element={<RoleProtectedRoute allowedRoles={['seller']}><SellerProducts /></RoleProtectedRoute>} />
           <Route path="/seller/products/add" element={<RoleProtectedRoute allowedRoles={['seller']}><AddProduct fetchProducts={fetchProducts} /></RoleProtectedRoute>} />
           <Route path="/seller/products/:id/edit" element={<RoleProtectedRoute allowedRoles={['seller']}><EditProduct /></RoleProtectedRoute>} />
 
           <Route path="/admin" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminDashboard /></RoleProtectedRoute>} />
           <Route path="/admin/users" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminUsers /></RoleProtectedRoute>} />
+          <Route path="/admin/users/:id" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminUserDetails /></RoleProtectedRoute>} />
+          <Route path="/admin/sellers/:id" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminSellerDetails /></RoleProtectedRoute>} />
           <Route path="/admin/categories" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminCategories /></RoleProtectedRoute>} />
           <Route path="/admin/products" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminProducts /></RoleProtectedRoute>} />
-          <Route path="/orders" element={<Orders />} />
+          <Route path="/admin/orders" element={<RoleProtectedRoute allowedRoles={['admin']}><AdminOrders /></RoleProtectedRoute>} />
+          <Route path="/orders" element={<RoleProtectedRoute allowedRoles={['client']}><Orders /></RoleProtectedRoute>} />
 
           {/* ================= UNKNOWN ROUTE ================= */}
 
@@ -175,18 +188,6 @@ export function App() {
     </Router>
   );
 }
-
-
-const styles = {
-  main: {
-    padding: '2rem',
-  },
-
-  loading: {
-    padding: '2rem',
-    textAlign: 'center',
-  },
-};
 
 
 export default App;

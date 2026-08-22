@@ -1,14 +1,23 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import Order from '../models/order.js';
 
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: { exclude: ['password'] },
+      include: [{ model: Order, attributes: ['id', 'totalAmount'] }],
+    });
+    const result = users.map((user) => {
+      const data = user.toJSON();
+      data.orderCount = data.Orders?.length || 0;
+      data.totalSpent = (data.Orders || []).reduce((sum, order) => sum + Number(order.totalAmount), 0);
+      delete data.Orders;
+      return data;
     });
     return res.status(200).json({
       success: true,
-      users,
+      users: result,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

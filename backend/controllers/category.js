@@ -1,10 +1,10 @@
-import { Category as category } from "../models/index.js";
+import { Category as category, Product } from "../models/index.js";
 
 
 export const getAllcategorys=async(req, res)=>{
 try{
   
-const categorys=await category.findAll()
+const categorys=await category.findAll({ include: [{ model: Product, as: "products", attributes: ["id"] }] })
 return res.status(200).json(categorys)
 }
 catch(error){console.log("error")
@@ -34,5 +34,14 @@ export const deletecategory = async (req, res) => {
     console.log(error, "error from deleting category");
     return res.status(500).json({ message: "failed to delete category" });
   }
+};
+
+export const updatecategory = async (req, res) => {
+  try {
+    const existing = await category.findByPk(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Category not found." });
+    await existing.update({ name: req.body.name, description: req.body.description });
+    return res.json(existing);
+  } catch (error) { return res.status(500).json({ message: error.message }); }
 };
 

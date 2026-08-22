@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { authService } from '../services/authService.js';
+import '../CSS/Profile.css';
 
 export const Profile = () => {
   const { user, setUser } = useAuth();
@@ -35,18 +36,19 @@ export const Profile = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h2>My Profile ({user?.role.toUpperCase()})</h2>
-      {message && <p style={styles.success}>{message}</p>}
-      {error && <p style={styles.error}>{error}</p>}
+    <div className="page-container profile-page">
+      <div className="profile-card card">
+      <div className="profile-heading"><h1 className="page-title">My Profile</h1><span className="role-badge">{user?.role.toUpperCase()}</span></div>
+      {message && <p className="feedback-success">{message}</p>}
+      {error && <p className="feedback-error">{error}</p>}
       
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <form onSubmit={handleSubmit} className="profile-form">
         <label>Name:</label>
         <input
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
 
         <label>Email:</label>
@@ -54,7 +56,7 @@ export const Profile = () => {
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
 
         <label>Phone:</label>
@@ -62,17 +64,17 @@ export const Profile = () => {
           type="text"
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
 
         <label>Address:</label>
         <textarea
           value={formData.address}
           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          style={styles.input}
+          className="form-textarea"
         />
 
-        <hr style={{ margin: '1rem 0' }} />
+        <hr className="profile-divider" />
         <h3>Change Password</h3>
 
         <label>Current Password:</label>
@@ -80,7 +82,7 @@ export const Profile = () => {
           type="password"
           value={formData.currentPassword}
           onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
 
         <label>New Password:</label>
@@ -88,20 +90,13 @@ export const Profile = () => {
           type="password"
           value={formData.newPassword}
           onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-          style={styles.input}
+          className="form-input"
         />
 
-        <button type="submit" style={styles.button}>Save Changes</button>
-      </form>
+        <button type="submit" className="primary-btn">Save Changes</button>
+        </form>
+      </div>
     </div>
   );
 };
 
-const styles = {
-  container: { maxWidth: '500px', margin: '2rem auto', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px' },
-  form: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
-  input: { padding: '0.5rem', fontSize: '1rem' },
-  button: { padding: '0.5rem', background: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '1rem' },
-  error: { color: 'red' },
-  success: { color: 'green' },
-};
