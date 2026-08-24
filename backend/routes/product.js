@@ -2,11 +2,13 @@ import express from "express";
 import { deleteproduct, getAllproducts, updateproduct, getproductById, addproduct, getSellerProducts } from "../controllers/product.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { roleMiddleware } from "../middleware/roleMiddleware.js";
+import { getProductReviews } from "../controllers/review.js";
 
 const router = express.Router();
 
 router.get("/", getAllproducts);
 router.get("/mine", authMiddleware, roleMiddleware("seller"), getSellerProducts);
+router.get("/:productId/reviews", getProductReviews);
 router.get("/:id",getproductById)
 router.post("/", authMiddleware, roleMiddleware("seller", "admin"), addproduct);
 router.put("/:id", authMiddleware, roleMiddleware("seller", "admin"), updateproduct);

@@ -14,7 +14,7 @@ export default function Cart() {
       const res = await api.get("/cart");
       setCart(res.data);
     } catch (err) {
-      console.error("Erreur chargement panier :", err);
+      console.error("Unable to load cart:", err);
     } finally {
       setLoading(false);
     }
@@ -26,18 +26,10 @@ export default function Cart() {
 
 
   const handleCheckout = async () => {
-    try {
-      const res = await api.post("/orders/checkout");
-      alert("Votre commande a été validée avec succès !");
-      // Rediriger vers la page de confirmation ou d'historique des commandes
-      navigate("/orders");
-    } catch (err) {
-      console.error("Erreur lors de la commande :", err);
-      alert("Impossible de valider la commande.");
-    }
+    navigate("/checkout");
   };
 
-  // Modifier la quantité
+  // Update quantity
   const handleUpdateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
 
@@ -53,7 +45,7 @@ export default function Cart() {
     }
   };
 
-  // Supprimer un produit
+  // Remove an item
   const handleRemoveItem = async (productId) => {
     try {
       await api.delete(`/cart/item/${productId}`);
@@ -67,32 +59,44 @@ export default function Cart() {
   if (loading) {
     return (
       <div className="cart-loading">
-        Chargement du panier...
+        Loading your cart...
       </div>
     );
   }
 
   const items = cart?.CartItems || cart?.items || [];
 
-  // Panier vide
+  const getProductImages = (product) => {
+    let images = product?.images;
+    if (typeof images === "string") {
+      try {
+        images = JSON.parse(images);
+      } catch {
+        images = [];
+      }
+    }
+    return Array.isArray(images) ? images : [];
+  };
+
+  // Empty cart
   if (items.length === 0) {
     return (
       <div className="cart-empty">
         <div className="cart-empty-icon">🛒</div>
 
-        <h2>Votre panier est vide</h2>
+        <h2>Your cart is empty</h2>
 
         <p>
-          Ajoutez des produits à votre panier pour commencer vos achats.
+          Add products to your cart to start shopping.
         </p>
       </div>
     );
   }
 
   // Calcul du total
-  const totalPrice = items.reduce(
-    (total, item) =>
-      total + Number(item.Product.price) * item.quantity,
+  const validItems = items.filter((item) => item.Product);
+  const totalPrice = validItems.reduce(
+    (total, item) => total + Number(item.Product.price) * item.quantity,
     0
   );
 
@@ -102,7 +106,7 @@ export default function Cart() {
       <div className="cart-container">
 
         <h2 className="cart-title">
-          Mon Panier
+          My Cart
         </h2>
 
         <div className="cart-content">
@@ -113,7 +117,7 @@ export default function Cart() {
 
           <div className="cart-items">
 
-            {items.map((item) => {
+            {validItems.map((item) => {
 
               const product = item.Product;
 
@@ -131,7 +135,7 @@ export default function Cart() {
 
                     <img
                       src={
-                        product.images?.[0] ||
+                        getProductImages(product)[0] ||
                         "/placeholder.png"
                       }
                       alt={product.name}
@@ -148,7 +152,7 @@ export default function Cart() {
                     </h3>
 
                     <p className="cart-item-price">
-                      Prix unitaire :{" "}
+                      Unit price: {" "}
                       {Number(product.price).toFixed(2)} TND
                     </p>
 
@@ -200,7 +204,7 @@ export default function Cart() {
                     onClick={() =>
                       handleRemoveItem(item.productId)
                     }
-                    title="Supprimer"
+                    title="Remove item"
                   >
                     ×
                   </button>
@@ -219,12 +223,12 @@ export default function Cart() {
           <div className="cart-summary">
 
             <h2>
-              Résumé de la commande
+              Order summary
             </h2>
 
             <div className="summary-row">
               <span>
-                Produits
+                Items
               </span>
 
               <span>
@@ -234,7 +238,7 @@ export default function Cart() {
 
             <div className="summary-row">
               <span>
-                Sous-total
+                Subtotal
               </span>
 
               <span>
@@ -244,11 +248,11 @@ export default function Cart() {
 
             <div className="summary-row">
               <span>
-                Livraison
+                Delivery
               </span>
 
               <span>
-                Gratuite
+                Free
               </span>
             </div>
 
@@ -267,7 +271,7 @@ export default function Cart() {
               className="checkout-btn"
               onClick={() => handleCheckout() }
             >
-              Confirmer la commande
+              Continue to checkout
             </button>
 
           </div>

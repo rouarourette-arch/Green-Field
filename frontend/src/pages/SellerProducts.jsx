@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios.js';
+import '../CSS/SellerProducts.css';
 
 export default function SellerProducts() {
   const [products, setProducts] = useState([]);
@@ -25,17 +26,17 @@ export default function SellerProducts() {
   };
 
   return (
-    <section>
-      <h2>My Products</h2>
-      <Link to="/seller/products/add">Add product</Link>
+    <section className="page-container seller-page">
+      <header className="page-header"><p className="eyebrow">Seller workspace</p><h1 className="page-title">My Products</h1><p className="page-subtitle">Manage your catalog and inventory.</p></header>
+      <div className="seller-actions"><span className="results-count">{products.length} products</span><Link className="primary-btn" to="/seller/products/add">Add product</Link></div>
       {error && <p role="alert">{error}</p>}
-      {products.map((product) => (
-        <article key={product.id}>
-          <strong>{product.name}</strong> - {product.price} ({product.stock} in stock)
+      <div className="seller-product-list">{products.map((product) => (
+        <article className="seller-product" key={product.id}>
+          <div><strong>{product.name}</strong><small>{product.category?.name || 'Uncategorized'} · {product.stock} in stock · {product.salesCount || 0} sold · ★ {Number(product.averageRating || 0).toFixed(1)}</small></div><strong>{product.price} TND</strong>
           <Link to={`/seller/products/${product.id}/edit`}>Edit</Link>
           <button onClick={() => deleteProduct(product.id)}>Delete</button>
         </article>
-      ))}
+      ))}</div>
     </section>
   );
 }

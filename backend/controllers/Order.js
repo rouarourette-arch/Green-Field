@@ -1,23 +1,22 @@
-
 import Cart from "../models/Cart.js";
-import CartItem from "../models/CartItem.js";   
+import CartItem from "../models/CartItem.js";
 import Product from "../models/product.js";
 import Order from "../models/order.js";
 import OrderItem from "../models/OrderItem.js";
-import sequelize from "../config/database.js";  
+import sequelize from "../config/database.js";
+import User from "../models/User.js";
 
-
-// 1. Créer une commande à partir du panier (Checkout)
-exports.createOrderFromCart = async (req, res) => {
-  // Utilisation d'une transaction pour garantir l'intégrité
+export const createOrderFromCart = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
     const userId = req.user.id;
 
-    // Récupérer le panier actif avec ses articles et les détails des produits
     const cart = await Cart.findOne({
-      where: { userId, status: "active" },
+      where: {
+        userId,
+        status: "active",
+      },
       include: [
         {
           model: CartItem,
@@ -29,59 +28,81 @@ exports.createOrderFromCart = async (req, res) => {
 
     if (!cart || !cart.CartItems || cart.CartItems.length === 0) {
       await t.rollback();
-      return res.status(400).json({ message: "Votre panier est vide" });
+
+      return res.status(400).json({
+        message: "Votre panier est vide",
+      });
     }
 
-    // Calcul du montant total
+    const unavailableItem = cart.CartItems.find((item) => !item.Product || item.quantity > item.Product.stock);
+    if (unavailableItem) {
+      await t.rollback();
+      return res.status(409).json({ message: `${unavailableItem.Product?.name || "A product"} is no longer available in the requested quantity.` });
+    }
+
     const totalAmount = cart.CartItems.reduce((sum, item) => {
-      return sum + item.quantity * item.Product.price;
+      return sum + Number(item.quantity) * Number(item.Product.price);
     }, 0);
 
-    // 1. Créer la commande (Order)
     const newOrder = await Order.create(
       {
         userId,
+        cartId: cart.id,
         totalAmount,
-        status: "paid", // ou "pending" selon la logique de paiement
+        status: "paid",
+        paymentStatus: "paid",
       },
-      { transaction: t }
+      {
+        transaction: t,
+      }
     );
 
-    // 2. Transférer chaque CartItem vers OrderItem
     const orderItemsData = cart.CartItems.map((item) => ({
       orderId: newOrder.id,
       productId: item.productId,
       quantity: item.quantity,
-      price: item.Product.price, // Stocker le prix à l'instant T
+      price: item.Product.price,
     }));
 
-    await OrderItem.bulkCreate(orderItemsData, { transaction: t });
+    await OrderItem.bulkCreate(orderItemsData, {
+      transaction: t,
+    });
 
-    // 3. Vider/Marquer le panier comme "completed"
-    cart.status = "completed";
-    await cart.save({ transaction: t });
+    for (const item of cart.CartItems) {
+      await item.Product.decrement("stock", {
+        by: item.quantity,
+        transaction: t,
+      });
+    }
 
-    // Valider la transaction
+    await cart.update({ status: "completed" }, { transaction: t });
+
     await t.commit();
 
     return res.status(201).json({
-      message: "Commande créée avec succès !",
+      message: "Order confirmed successfully.",
       orderId: newOrder.id,
       totalAmount,
     });
   } catch (error) {
-    await t.rollback();
-    return res.status(500).json({ error: error.message });
+    if (!t.finished) await t.rollback();
+
+    console.error("Error creating order:", error);
+
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
-// 2. Récupérer l'historique des commandes de l'utilisateur
-exports.getUserOrders = async (req, res) => {
+export const getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
 
     const orders = await Order.findAll({
-      where: { userId },
+      where: {
+        userId,
+      },
       include: [
         {
           model: OrderItem,
@@ -93,6 +114,60 @@ exports.getUserOrders = async (req, res) => {
 
     return res.status(200).json(orders);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("Error fetching orders:", error);
+
+    return res.status(500).json({
+      message: error.message,
+    });
   }
+};
+
+const orderIncludes = (sellerId) => [{
+  model: User,
+  attributes: ["id", "name", "email"],
+}, {
+  model: OrderItem,
+  required: Boolean(sellerId),
+  include: [{
+    model: Product,
+    ...(sellerId ? { where: { sellerId } } : {}),
+    include: [{ association: "category", attributes: ["id", "name"] }, { association: "seller", attributes: ["id", "name", "email"] }],
+  }],
+}];
+
+export const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findByPk(req.params.id, { include: orderIncludes() });
+    if (!order) return res.status(404).json({ message: "Order not found." });
+    if (req.user.role === "client" && order.userId !== req.user.id) return res.status(403).json({ message: "Forbidden access." });
+    if (req.user.role === "seller" && !(order.OrderItems || []).some((item) => item.Product?.sellerId === req.user.id)) return res.status(403).json({ message: "Forbidden access." });
+    return res.json(order);
+  } catch (error) { return res.status(500).json({ message: error.message }); }
+};
+
+export const getAdminOrders = async (req, res) => {
+  try {
+    const orders = await Order.findAll({ include: orderIncludes(), order: [["createdAt", "DESC"]] });
+    return res.json(orders);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getSellerOrders = async (req, res) => {
+  try {
+    const orders = await Order.findAll({ include: orderIncludes(req.user.id), order: [["createdAt", "DESC"]] });
+    return res.json(orders);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  const allowedStatuses = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
+  if (!allowedStatuses.includes(req.body.status)) return res.status(400).json({ message: "Invalid order status." });
+  const order = await Order.findByPk(req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found." });
+  await order.update({ status: req.body.status });
+  return res.json(order);
 };
