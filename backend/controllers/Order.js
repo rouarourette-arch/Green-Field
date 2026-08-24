@@ -5,20 +5,8 @@ import Order from "../models/order.js";
 import OrderItem from "../models/OrderItem.js";
 import sequelize from "../config/database.js";
 import User from "../models/User.js";
-import Stripe from "stripe";
-
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
-
-const getStripeUrls = () => ({
-  success_url: `${process.env.CLIENT_URL || "http://localhost:5173"}/checkout?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `${process.env.CLIENT_URL || "http://localhost:5173"}/checkout?payment=cancelled`,
-});
 
 export const createOrderFromCart = async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ message: "Stripe is not configured on the server." });
-  }
-
   const t = await sequelize.transaction();
 
   try {
@@ -27,7 +15,6 @@ export const createOrderFromCart = async (req, res) => {
     const cart = await Cart.findOne({
       where: {
         userId,
-        cartId: cart.id,
         status: "active",
       },
       include: [
@@ -60,9 +47,10 @@ export const createOrderFromCart = async (req, res) => {
     const newOrder = await Order.create(
       {
         userId,
+        cartId: cart.id,
         totalAmount,
-        status: "pending",
-        paymentStatus: "pending",
+        status: "paid",
+        paymentStatus: "paid",
       },
       {
         transaction: t,
@@ -80,32 +68,24 @@ export const createOrderFromCart = async (req, res) => {
       transaction: t,
     });
 
+    for (const item of cart.CartItems) {
+      await item.Product.decrement("stock", {
+        by: item.quantity,
+        transaction: t,
+      });
+    }
+
+    await cart.update({ status: "completed" }, { transaction: t });
+
     await t.commit();
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: cart.CartItems.map((item) => ({
-        price_data: {
-          currency: "tnd",
-          product_data: { name: item.Product.name },
-          unit_amount: Math.round(Number(item.Product.price) * 100),
-        },
-        quantity: item.quantity,
-      })),
-      ...getStripeUrls(),
-      metadata: { orderId: String(newOrder.id), userId: String(userId) },
-    });
-
-    await newOrder.update({ stripeSessionId: session.id });
-
     return res.status(201).json({
-      message: "Checkout session created.",
+      message: "Order confirmed successfully.",
       orderId: newOrder.id,
       totalAmount,
-      checkoutUrl: session.url,
     });
   } catch (error) {
-    await t.rollback();
+    if (!t.finished) await t.rollback();
 
     console.error("Error creating order:", error);
 
@@ -140,50 +120,6 @@ export const getUserOrders = async (req, res) => {
       message: error.message,
     });
   }
-};
-
-export const handleStripeWebhook = async (req, res) => {
-  if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return res.status(503).send("Stripe webhook is not configured.");
-  }
-
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, req.headers["stripe-signature"], process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (error) {
-    return res.status(400).send(`Webhook Error: ${error.message}`);
-  }
-
-  if (event.type === "checkout.session.completed" && event.data.object.payment_status === "paid") {
-    const session = event.data.object;
-    const order = await Order.findOne({ where: { stripeSessionId: session.id } });
-    if (order && order.paymentStatus !== "paid") {
-      await sequelize.transaction(async (transaction) => {
-        const orderItems = await OrderItem.findAll({ where: { orderId: order.id }, include: [Product], transaction, lock: transaction.LOCK.UPDATE });
-        for (const item of orderItems) {
-          if (!item.Product || item.Product.stock < item.quantity) {
-            await order.update({ status: "cancelled", paymentStatus: "failed" }, { transaction });
-            return;
-          }
-          await item.Product.decrement("stock", { by: item.quantity, transaction });
-        }
-        await order.update({
-          status: "paid",
-          paymentStatus: "paid",
-          stripePaymentIntentId: session.payment_intent,
-        }, { transaction });
-        const cart = await Cart.findOne({ where: { id: order.cartId, userId: order.userId, status: "active" }, transaction });
-        if (cart) await cart.update({ status: "completed" }, { transaction });
-      });
-    }
-  }
-
-  if (event.type === "checkout.session.expired" || event.type === "checkout.session.async_payment_failed") {
-    const session = event.data.object;
-    await Order.update({ status: "cancelled", paymentStatus: "cancelled" }, { where: { stripeSessionId: session.id, paymentStatus: "pending" } });
-  }
-
-  return res.json({ received: true });
 };
 
 const orderIncludes = (sellerId) => [{

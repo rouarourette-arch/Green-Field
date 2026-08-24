@@ -28,15 +28,6 @@ const Order = sequelize.define("Order", {
     type: DataTypes.ENUM("pending", "paid", "failed", "cancelled"),
     defaultValue: "pending",
   },
-  stripeSessionId: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    unique: true,
-  },
-  stripePaymentIntentId: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
 });
 
 export default Order;
