@@ -66,6 +66,18 @@ export default function Cart() {
 
   const items = cart?.CartItems || cart?.items || [];
 
+  const getProductImages = (product) => {
+    let images = product?.images;
+    if (typeof images === "string") {
+      try {
+        images = JSON.parse(images);
+      } catch {
+        images = [];
+      }
+    }
+    return Array.isArray(images) ? images : [];
+  };
+
   // Empty cart
   if (items.length === 0) {
     return (
@@ -82,9 +94,9 @@ export default function Cart() {
   }
 
   // Calcul du total
-  const totalPrice = items.reduce(
-    (total, item) =>
-      total + Number(item.Product.price) * item.quantity,
+  const validItems = items.filter((item) => item.Product);
+  const totalPrice = validItems.reduce(
+    (total, item) => total + Number(item.Product.price) * item.quantity,
     0
   );
 
@@ -105,7 +117,7 @@ export default function Cart() {
 
           <div className="cart-items">
 
-            {items.map((item) => {
+            {validItems.map((item) => {
 
               const product = item.Product;
 
@@ -123,7 +135,7 @@ export default function Cart() {
 
                     <img
                       src={
-                        product.images?.[0] ||
+                        getProductImages(product)[0] ||
                         "/placeholder.png"
                       }
                       alt={product.name}

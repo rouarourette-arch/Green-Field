@@ -21,6 +21,7 @@ import AddProduct from './components/AddProduct.jsx';
 import ProductDetails from './components/ProductDetails.jsx';
 import Cart from './components/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
+import OrderSuccess from './pages/OrderSuccess.jsx';
 import SellerProducts from './pages/SellerProducts.jsx';
 import SellerDashboard from './pages/SellerDashboard.jsx';
 import EditProduct from './pages/EditProduct.jsx';
@@ -146,6 +147,7 @@ function AppContent() {
 
 
           <Route path="/checkout" element={<RoleProtectedRoute allowedRoles={['client']}><Checkout /></RoleProtectedRoute>} />
+          <Route path="/order-success/:orderId" element={<RoleProtectedRoute allowedRoles={['client']}><OrderSuccess /></RoleProtectedRoute>} />
           <Route path="/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
 
           <Route path="/seller" element={<RoleProtectedRoute allowedRoles={['seller']}><SellerDashboard /></RoleProtectedRoute>} />

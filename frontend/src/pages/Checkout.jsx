@@ -1,28 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios.js';
 import '../CSS/Checkout.css';
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
-  const [complete, setComplete] = useState(false);
-  const [cancelled, setCancelled] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [cart, setCart] = useState(null);
+  const [cartLoading, setCartLoading] = useState(true);
 
   useEffect(() => {
-    setComplete(searchParams.get('payment') === 'success');
-    setCancelled(searchParams.get('payment') === 'cancelled');
-  }, [searchParams]);
+    api.get('/cart').then((response) => setCart(response.data)).catch((requestError) => setError(requestError.response?.data?.message || 'Unable to load your cart.')).finally(() => setCartLoading(false));
+  }, []);
 
   const handleCheckout = async () => {
     try {
       setError('');
-      setCancelled(false);
       setSubmitting(true);
       const response = await api.post('/orders/checkout');
-      window.location.assign(response.data.checkoutUrl);
+      navigate(`/order-success/${response.data.orderId}`, { state: { totalAmount: response.data.totalAmount } });
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Checkout failed.');
     } finally {
@@ -30,26 +27,13 @@ export default function Checkout() {
     }
   };
 
-  if (complete) {
-    return (
-      <section className="page-container checkout-page">
-        <h2>Order confirmed</h2>
-        <p>Your payment was submitted. The order will be marked paid after Stripe confirms it.</p>
-        <button onClick={() => navigate('/')}>Continue shopping</button>
-      </section>
-    );
-  }
-
-  if (cancelled) {
-    return <section className="page-container checkout-page"><div className="confirmation-card card"><h2>Payment cancelled</h2><p>Your order remains unpaid. You can return to your cart and try again.</p><Link className="secondary-btn" to="/cart">Return to cart</Link></div></section>;
-  }
-
   return (
-    <section>
-      <h2>Checkout</h2>
-      <p>Review your cart and confirm your secure checkout.</p>
+    <section className="page-container checkout-page">
+      <h1 className="page-title">Checkout</h1>
+      <p className="page-subtitle">Review your cart and confirm your order.</p>
       {error && <p role="alert">{error}</p>}
-      <button className="primary-btn" onClick={handleCheckout} disabled={submitting}>{submitting ? 'Redirecting to payment...' : 'Continue to secure payment'}</button>
+      {cartLoading ? <p className="loading-state">Loading your order summary...</p> : !(cart?.CartItems || cart?.items || []).length ? <div className="empty-state"><p>Your cart is empty.</p><Link className="secondary-btn" to="/">Browse products</Link></div> : <div className="checkout-summary card">{(cart.CartItems || cart.items).map((item) => <div className="detail-line" key={item.id}><span>{item.Product?.name || 'Product'} × {item.quantity}</span><strong>{(Number(item.Product?.price || item.price) * item.quantity).toFixed(2)} TND</strong></div>)}<div className="detail-total"><span>Total</span><strong>{(cart.CartItems || cart.items).reduce((total, item) => total + Number(item.Product?.price || item.price) * item.quantity, 0).toFixed(2)} TND</strong></div></div>}
+      <button className="primary-btn" onClick={handleCheckout} disabled={submitting || cartLoading || !(cart?.CartItems || cart?.items || []).length}>{submitting ? 'Confirming order...' : 'Confirm order'}</button>
       <p><Link to="/cart">Back to cart</Link></p>
     </section>
   );
