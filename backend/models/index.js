@@ -137,7 +137,7 @@ Review.belongsTo(User, {
 // EXPORTS
 // =====================================================
 
-export {
+export default {
   User,
   Product,
   Category,
